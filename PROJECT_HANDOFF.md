@@ -1,5 +1,7 @@
 # Seoul Kids Cafe MVP Handoff
 
+> **Current continuation document:** Read [`RESEARCH_IMPLEMENTATION_HANDOFF.md`](./RESEARCH_IMPLEMENTATION_HANDOFF.md) first. It records the 2026-09-02 decisions that split the work into research and implementation tracks and supersedes conflicting product-direction statements below. This file remains as implementation history and earlier feasibility context.
+
 ## Background
 
 The project started from an observed usability problem in the current Seoul Kids Cafe reservation journey:
@@ -14,15 +16,21 @@ The MVP should reduce reservation preparation friction while keeping the final o
 
 ## Core judgment
 
-The MVP should not try to replace Seoul login or official reservation submission at this stage.
+The product exists to remove repetition and broken context from the reservation journey. It is not a facility portal, map product, automatic reservation bot, or an AI showcase.
 
-The near-term product should work as a reservation assistant:
+### Product goal
 
-1. Remember the user's preferred facilities and reservation intent.
-2. Read facility and slot availability.
-3. Recommend the relevant reservation slot.
-4. Open the official Seoul reservation page with as much context preserved as possible.
-5. Let the user complete final reservation confirmation.
+> Help a parent choose a facility, date, and time once; preserve that choice through the Seoul login boundary; and safely continue to the user-controlled final application on the official Seoul page.
+
+The user promise is:
+
+1. Choose the reservation intent once.
+2. Compare only the slot containing the chosen time and the next available slot.
+3. Preserve the facility, date, and slot across Kakao and Seoul login transitions as far as the verified integration permits.
+4. Never claim that a reservation is complete until official completion is confirmed.
+5. Keep the final application action under the user's control.
+
+Edge AI is an implementation option for reducing interruption after Seoul login. It is not itself the product goal and must not be marketed as working until an allowed runtime can actually observe and assist the cross-origin official flow.
 
 ## Confirmed product direction
 
@@ -30,37 +38,50 @@ The near-term product should work as a reservation assistant:
 
 ```mermaid
 flowchart TD
-    A["Kakao login"] --> B["Select 1-3 favorite cafes"]
-    B --> C["Choose date and desired time"]
-    C --> D["Find matching slot and next slot"]
-    D --> E["User chooses target slot"]
-    E --> F["Open official Seoul reservation page"]
-    F --> G["User completes final reservation"]
+    A["Kakao login"] --> B{"Favorite cafe available?"}
+    B -->|Yes| C["Choose from 1-3 favorite cafes"]
+    B -->|No| D["Search and choose one cafe"]
+    C --> E["Choose date and time to use"]
+    D --> E
+    E --> F["Show containing slot and next available slot"]
+    F --> G["User chooses a slot"]
+    G --> H["Persist facility, date, and slot"]
+    H --> I["Enter official Seoul reservation flow"]
+    I --> J{"Seoul session exists?"}
+    J -->|No| K["Seoul integrated login"]
+    J -->|Yes| L["Continue reservation assistance"]
+    K --> L
+    L --> M["User reviews and submits final application"]
+    M --> N{"Official completion confirmed?"}
+    N -->|Yes| O["Save schedule and cancellation deadline"]
+    N -->|No| P["Show confirmation required"]
 ```
 
 ### Main UI
 
-Only three primary cards should appear on the main screen:
+The main screen is a short reservation journey, not a vertical catalogue of every feature. One screen should ask for one decision, and the primary action must be visible without scrolling through facility lists or recommendation surveys.
 
-| Card | Purpose | Constraint |
+| Surface | Purpose | Constraint |
 |---|---|---|
-| One-tap reservation assistant | Find target slot and move to official reservation | Seoul final reservation remains user-controlled |
-| Favorite facilities | Show 1-3 frequently used cafes | User can select 1, 2, or 3 |
-| Recommended cafes | Recommend 3 similar cafes | Based on preferred equipment survey and ontology |
+| Reservation home | Start or resume one reservation | No technical Edge AI explanation |
+| Favorite facilities | Accelerate facility choice | Show 1-3; never auto-select an unregistered facility |
+| Facility search | Select a cafe when no favorite applies | Separate sheet/page; no repeated large add buttons |
+| Slot choice | Compare exactly two relevant choices | Containing slot and next available slot |
+| Recommendations | Help only when the user cannot choose a cafe | Hidden until real, sourced equipment coverage exists |
 
 Other features should be moved to a separate page, popup, drawer, or future version.
 
-### Map
+### Language principles
 
-Map should not dominate the main screen.
+- Use customer outcomes, not implementation language.
+- Prefer "time to use" over ambiguous or technical wording such as "reservation intent" in the UI.
+- Use "Apply on Seoul" rather than copy implying that clicking the outbound link completes a reservation.
+- Label the first slot "Contains your selected time", not "Recommended slot".
+- Use "Favorite places" consistently instead of mixing "my facilities", "selected facility", and favorites.
 
-Recommended options:
+### Facility location
 
-| Option | Use case |
-|---|---|
-| Separate in-app map page | Facility exploration and nearby recommendations |
-| Kakao Map deep link | Fast navigation and low implementation burden |
-| Hybrid | Main MVP uses deep link first; in-app map becomes v2 |
+The MVP does not include a map. Show the official facility address in the selection list and in the selected reservation summary. Reconsider map or directions only after the core reservation flow is validated.
 
 ## Data sources
 
@@ -69,8 +90,8 @@ Recommended options:
 | Facility base data | Seoul Open API `tnFcltySttusInfo1011` | Official API |
 | Reservation slots | UMPPA public endpoint `ND_selectResveTmeList.do` | Read-only, unofficial |
 | Reservation calendar | UMPPA public calendar page | Read-only, unofficial |
-| Equipment data | Facility pages/manual collection/survey enrichment | Collection needed |
-| User preferences | In-app survey | To implement |
+| Equipment data | Facility pages/manual collection/survey enrichment | Not available in connected facility data; fixture tags are not product evidence |
+| User preferences | Progressive pre/post-visit prompts | Future; do not require an up-front survey |
 
 ## Environment variables
 
@@ -125,30 +146,50 @@ The first version can use rules and tags. Embedding-based similarity can be adde
 
 ## Known issues to address next
 
-1. UI readability is weak in the one-tap reservation test modal.
-   - Add stronger color hierarchy.
-   - Make slot cards visually distinguishable.
-   - Make time, type, and remaining seats easier to parse.
+1. The official outbound URL is wrong for reservation entry.
+   - The app previously used `BD_selectKidsCafeResveRs.do`.
+   - It now uses the verified facility calendar entry point and has a regression test for excluded date/slot parameters.
+   - Verify and use the official calendar/application entry flow (`BD_selectKidsCafeResveCal.do`) without claiming that query parameters preserve more context than is proven.
 
-2. Map view is not working.
-   - Check Kakao key loading.
-   - Check script initialization.
-   - Check fallback deep link behavior.
+2. The Seoul-login continuation is the primary product feasibility gate.
+   - Public-page inspection confirms that the official login return URL retains the facility but not the selected date or slot.
+   - The official page keeps date and slot in local form state and POSTs to `BD_insertKidsCafeForm.do`; an ordinary cross-origin web handoff cannot restore or operate those controls.
+   - Test the remaining login return behavior in Kakao in-app browser and normal mobile browsers.
+   - Until an allowed assisting runtime is proven, ship an honest reservation-preparation handoff rather than an Edge AI claim.
+   - See `SEOUL_FLOW_FEASIBILITY.md` for evidence, runtime options, and remaining real-device tests.
 
-3. Favorite facility management has no clear next response after selection.
-   - Allow 1-3 selections.
-   - Add save confirmation.
-   - Update main cards immediately after save.
+3. The current main page is too long and mixes unrelated decisions.
+   - Rebuild it as a staged reservation journey.
+   - Never preselect the first loaded facility for a new user.
+   - Keep facility search and preference collection out of the primary vertical flow.
 
-4. Login flow remains unresolved.
-   - Do not store Seoul login credentials.
-   - Explore UX designs that ask users to login early or only at reservation time.
-   - Preserve selected facility/date/time through redirects when possible.
+4. Equipment recommendations are fixture-only.
+   - Hide them in connected mode until sourced facility-equipment data exists.
+   - Store source, observed date, normalized category, and coverage before enabling recommendations.
 
-5. Reservation automation risk remains unresolved.
-   - Avoid automatic final submit.
-   - Keep final reservation button user-controlled.
-   - Consider clipboard/autofill/browser-assist only after policy review.
+5. Reservation state is not trustworthy enough.
+   - Opening the official page means "application in progress", not "complete".
+   - Show completion only with official evidence or explicit user confirmation.
+
+6. Reservation automation risk remains unresolved.
+   - Never store Seoul credentials.
+   - Never automatically submit or cancel.
+   - Review policy before enabling official-page observation or autofill.
+
+## MVP completion gates
+
+The MVP is complete only when all of the following are evidenced:
+
+1. A new user sees no fabricated facility selection.
+2. The entered date and time survive a real Kakao OAuth round trip exactly.
+3. Slot matching returns the containing available slot and the next available slot, skipping sold-out slots.
+4. The outbound action opens the verified official reservation entry page.
+5. Seoul-login return behavior and preservation limits are documented from real-device tests.
+6. The app never reports completion merely because the official page was opened.
+7. Final submission remains user-controlled.
+8. The core flow works in Kakao in-app browser and a normal mobile browser.
+9. Connected-mode recommendations are supported by sourced real equipment data or are absent.
+10. `npm run check` and `npm run build` pass.
 
 ## Recommended next Codex task prompt
 
@@ -158,11 +199,12 @@ Read AGENTS.md and PROJECT_HANDOFF.md first.
 Then continue the Seoul Kids Cafe MVP from the current repository state.
 
 Priority tasks:
-1. Improve one-tap reservation modal readability with stronger color hierarchy and clearer slot cards.
-2. Fix map view or add a reliable Kakao Map deep-link fallback.
-3. Update favorite facility management so users can select 1, 2, or 3 facilities and receive immediate UI feedback after saving.
-4. Keep recommendation and ontology logic modular.
-5. Run npm run check and npm run build before reporting completion.
+1. Treat the product goal and MVP completion gates in this handoff as authoritative.
+2. Verify the official reservation entry URL and Seoul-login return behavior before redesigning the UI.
+3. Remove misleading Edge AI and reservation-complete claims from the customer journey.
+4. Rebuild the main experience as the staged facility -> date/time -> two-slot -> official-application flow.
+5. Hide fixture-only equipment recommendations in connected mode.
+6. Run npm run check and npm run build before reporting completion.
 
 Do not store real API keys.
 Do not implement Seoul credential storage or automatic final reservation submission.

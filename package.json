@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "check": "tsc --noEmit",
+    "test": "node --test lib/**/*.test.ts",
+    "alpha:preflight": "node scripts/alpha-preflight.mjs",
     "check:reservation-api": "node scripts/check-reservation-api.mjs"
   },
   "dependencies": {

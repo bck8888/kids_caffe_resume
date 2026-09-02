@@ -1,16 +1,23 @@
-# 서울 키즈카페 찾기
+# 서울형 키즈카페 예약 도우미
 
-서울형 키즈카페의 시설 위치와 날짜별 회차·잔여석을 확인하고 서울시 공식 예약 페이지로 이동하는 모바일 웹 MVP입니다.
+부모가 시설·날짜·이용 시간을 한 번만 선택하고, 그 선택을 서울시 공식 예약 단계까지 잃지 않도록 돕는 모바일 우선 서비스입니다. 최종 신청은 사용자가 서울시 공식 페이지에서 직접 진행합니다.
+
+Edge AI는 서울시 로그인 이후의 단절을 줄이기 위한 검토 기술이지 현재 제품의 검증된 기능이나 고객 대상 약속이 아닙니다. 공식 화면을 보조할 수 있는 허용된 실행 환경이 검증되기 전에는 예약 준비와 정확한 공식 페이지 연결을 MVP 경계로 삼습니다.
 
 ## MVP 기능
 
 - 서울형 키즈카페 시설 목록 조회
 - 시설명·자치구·주소 검색
-- 카카오맵 시설 위치 표시
+- 시설별 도로명 주소 표시
 - 날짜별 회차·잔여석·대기·취소기한 조회
 - 서울시 공식 예약 페이지 연결
 - 카카오톡 시설 공유
 - 예약 일정 브라우저 저장 및 삭제
+- 카카오 OAuth 서비스 세션 경계
+- 시설·날짜·희망 시간 예약 의도 복원
+- 이용하고 싶은 시간이 포함된 회차와 다음 이용 가능 회차의 결정론적 선택 규칙
+- 외부 키 없이 UI 흐름을 검증하는 명시적 합성 알파 모드
+- 알 수 없는 화면에서 중단하고 최종 신청을 실행하지 않는 화면 어댑터 실험
 
 ## 데이터 출처
 
@@ -37,6 +44,10 @@ SEOUL_OPEN_API_KEY=
 SEOUL_RESERVATION_API_KEY=
 NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY=
 KAKAO_REST_API_KEY=
+KAKAO_CLIENT_SECRET=
+APP_SESSION_SECRET=
+NEXT_PUBLIC_APP_URL=
+ALPHA_USE_FIXTURES=false
 ```
 
 실제 키는 `.env.local`에서만 관리하며 Git에 포함하지 않습니다.
@@ -46,7 +57,13 @@ KAKAO_REST_API_KEY=
 ```bash
 npm run check
 npm run build
+npm test
+npm run alpha:preflight
 ```
+
+알파 절차와 실제 연동 게이트는 [`ALPHA_TEST_PLAN.md`](./ALPHA_TEST_PLAN.md)를 따릅니다. `ALPHA_USE_FIXTURES=true`에서 보이는 데이터는 합성 테스트 데이터이며 운영 근거로 사용할 수 없습니다.
+
+서울시 로그인 이후 날짜·회차 보존의 기술 경계와 실기기 검증 항목은 [`SEOUL_FLOW_FEASIBILITY.md`](./SEOUL_FLOW_FEASIBILITY.md)를 따릅니다.
 
 ## 현재 제한
 

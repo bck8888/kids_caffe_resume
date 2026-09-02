@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { alphaFacilities } from "@/lib/alpha/fixtures";
 
 const SERVICE_NAME = "tnFcltySttusInfo1011";
 
@@ -17,14 +18,14 @@ function normalize(row: SeoulRow, index: number) {
   return {
     id: textValue(row, ["FCLTY_ID", "FCLTYID", "fcltyId", "FCLTYIDNTFR", "ID"]) || `facility-${index}`,
     name: textValue(row, ["FCLTY_NM", "FCLTYNM", "fcltyNm", "FACLT_NM", "FCLTYNAME", "NAME"]),
-    district: textValue(row, ["SIGNGU_NM", "SIGNGU", "GU_NM", "S_DISTRICT", "SIGUNGU"]),
+    district: textValue(row, ["ATDRC_NM", "SIGNGU_NM", "SIGNGU", "GU_NM", "S_DISTRICT", "SIGUNGU"]),
     address: textValue(row, ["BASS_ADRES", "ROAD_NM_ADDR", "ROAD_ADDR", "ADDRESS", "ADDR", "ADRES"]),
-    latitude: textValue(row, ["LA", "LAT", "LATITUDE", "Y", "FCLTY_LA"]),
-    longitude: textValue(row, ["LO", "LON", "LONGITUDE", "X", "FCLTY_LO"]),
-    age: textValue(row, ["USE_AGE", "USE_AGE_NM", "UTILIIZA_AGE", "AGE"]),
+    latitude: textValue(row, ["Y_CRDNT_VALUE", "LA", "LAT", "LATITUDE", "Y", "FCLTY_LA"]),
+    longitude: textValue(row, ["X_CRDNT_VALUE", "LO", "LON", "LONGITUDE", "X", "FCLTY_LO"]),
+    age: textValue(row, ["POSBL_AGRDE", "USE_AGE", "USE_AGE_NM", "UTILIIZA_AGE", "AGE"]),
     phone: textValue(row, ["TELNO", "TEL_NO", "PHONE", "CTTPC"]),
-    operatingDays: textValue(row, ["OPER_DAY", "OPER_DE", "OPERATING_DAY", "WORKDAY"]),
-    closedDays: textValue(row, ["RGLR_HOLIDAY", "CLSE_DAY", "CLOSED_DAY", "HOLIDAY"])
+    operatingDays: textValue(row, ["OPEN_WEEK", "OPER_DAY", "OPER_DE", "OPERATING_DAY", "WORKDAY"]),
+    closedDays: textValue(row, ["CLOSE_WEEK", "RGLR_HOLIDAY", "CLSE_DAY", "CLOSED_DAY", "HOLIDAY"])
   };
 }
 
@@ -32,6 +33,7 @@ export async function GET() {
   const apiKey = process.env.SEOUL_OPEN_API_KEY;
 
   if (!apiKey) {
+    if (process.env.ALPHA_USE_FIXTURES === "true") return NextResponse.json({ total:alphaFacilities.length,facilities:alphaFacilities,updatedAt:new Date().toISOString(),source:"synthetic-alpha-fixture" });
     return NextResponse.json({ error: "서울시 Open API 키가 설정되지 않았습니다." }, { status: 500 });
   }
 
@@ -56,6 +58,7 @@ export async function GET() {
     return NextResponse.json({
       total: service.list_total_count ?? facilities.length,
       facilities,
+      source: "seoul-open-api",
       updatedAt: new Date().toISOString()
     });
   } catch (error) {
