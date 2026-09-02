@@ -17,7 +17,7 @@ export type ReservationIntent = {
   updatedAt: string;
 };
 
-export type EdgeAction =
+export type ReservationAction =
   | { type: "show_slots"; slotIds: string[]; requiresUserConfirmation: true; reason: string }
   | { type: "open_official_page"; slotId: string; requiresUserConfirmation: true; reason: string }
   | { type: "ask_user"; requiresUserConfirmation: true; reason: string };

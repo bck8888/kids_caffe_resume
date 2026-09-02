@@ -1,6 +1,6 @@
 # Seoul Kids Cafe — Research & Implementation Handoff
 
-Updated: 2026-09-02
+Updated: 2026-09-03
 Status: product direction recorded; research and full local assistant are not complete.
 
 ## Start here
@@ -10,7 +10,7 @@ The service improves an already successful public service; it does not claim tha
 The work now has two coordinated tracks:
 
 1. **Research:** validate the narrow reservation pain, build consented non-sensitive knowledge, and test public-value outcomes.
-2. **Implementation:** build the shortest repeat-reservation flow and a lightweight local assistant that can dismiss known popups and restore allowed fields on the official page.
+2. **Implementation:** build the shortest repeat-reservation flow and a lightweight mobile on-device assistant that can eventually dismiss known popups and restore allowed fields on the official page through a separately validated mobile host runtime.
 
 ## Confirmed product decisions
 
@@ -24,7 +24,7 @@ The work now has two coordinated tracks:
 | Destination choice | Do not choose a cafe for the family without sourced facility evidence |
 | Final submission | Always reviewed and triggered by the user on the official Seoul flow |
 | Seoul credentials | Never collect or store the user's Seoul password |
-| Core IP | Keep server-side orchestration, ontology, ranking, and analytics private; assume any client-shipped model or extension can be inspected |
+| Core IP | Keep server-side orchestration, ontology, ranking, and analytics private; assume any client-shipped model or mobile package can be inspected |
 | Data use | Separate service operation from optional research/content consent; exclude sensitive data and direct identifiers |
 
 ## Target flow
@@ -51,9 +51,9 @@ flowchart LR
 - Kakao OAuth establishes the Seoul Kids service identity.
 - Immediately after onboarding, open the official Seoul login page in the same supported browser profile.
 - The user enters credentials only on the Seoul-owned origin; the official session cookie stays under Seoul's control.
-- The local companion detects only whether the official page is logged in, not the password or authentication token value.
+- A policy-approved mobile host may detect only whether the official page is logged in, not the password or authentication token value.
 - On expiry, return the user to official login and resume from the locally stored reservation intent.
-- Test normal Edge first. Kakao in-app browser can launch the service but cannot be assumed to host a browser extension.
+- Test Kakao in-app browser and normal mobile Safari/Chrome as entry paths. The assistant core must not depend on Microsoft Edge or any one browser.
 
 ## Research track
 
@@ -135,7 +135,7 @@ Keep identity/authentication data outside Neo4j. Use a rotating pseudonymous sub
 | Reservation intent | Facility, date, and desired time persist locally |
 | Slot selection | Containing slot plus next available slot logic and tests exist |
 | Official handoff | Correct facility calendar URL builder and regression test exist |
-| Edge assistant | Synthetic screen-state classifier and safe-action tests only; no real page integration |
+| Mobile on-device assistant | Versioned local intent package, official-origin/expiry safety gate, synthetic screen-state classifier, and safe-action tests; no real official-page host integration |
 | Equipment recommendation | Fixture/rule experiment only; not product evidence |
 | Neo4j | Not implemented |
 | Research consent and telemetry | Not implemented |
@@ -144,8 +144,8 @@ Keep identity/authentication data outside Neo4j. Use a rotating pseudonymous sub
 
 ```mermaid
 flowchart LR
-    W["Seoul Kids web app"] -->|signed intent package| C["Local companion"]
-    C --> X["Edge extension content script"]
+    W["Seoul Kids web app"] -->|versioned local intent| C["Mobile on-device core"]
+    C --> X["OS-specific host adapter"]
     X -->|sanitized UI state| P["Deterministic page adapter"]
     P -->|unknown popup only| M["Tiny local model"]
     P --> A["Allowlisted actions"]
@@ -154,23 +154,25 @@ flowchart LR
     X --> S["Official Seoul page"]
 ```
 
+- `Edge AI` means lightweight inference on the customer's mobile device. It does not mean Microsoft Edge.
+- Keep the inference and decision core browser-neutral. Any official-page observation is a separate OS-specific host capability that must be proven on each target platform.
 - Use deterministic selectors for known popups and fields; invoke a tiny local model only for unknown notice classification.
-- Run the model locally through a companion process, preferably via ONNX Runtime or a similarly lightweight runtime.
+- Run the model locally through a mobile-capable runtime such as ONNX Runtime Mobile or WebAssembly only after size, startup, memory, and battery measurements pass.
 - Restrict actions to an allowlist: dismiss known notice, highlight login, select date, select slot, fill approved fields, highlight final submit, stop.
 - Never include final submit, payment, cancellation, credential capture, or arbitrary clicking in the action set.
-- Sign the intent package from the service and validate origin, facility, date, expiry, and schema in the companion.
-- Keep proprietary orchestration and ontology services server-side. A locally distributed model and extension cannot be fully hidden.
+- Validate intent schema, facility, date, selected time, selected slot, expiry, and allowed actions locally. Add server signing only when a separate host runtime actually consumes the package.
+- Keep proprietary orchestration and ontology services server-side. A locally distributed model and mobile package cannot be fully hidden.
 
 ### Implementation backlog
 
 | Priority | Work | Acceptance evidence |
 |---:|---|---|
 | I0 | Redesign the main UI as staged `login → cafe → date/time → two slots → Seoul` flow | Mobile viewport requires one decision per stage; no fabricated default facility |
-| I0 | Define the local intent package and allowlisted action protocol | Versioned schema, signature verification, expiry, negative tests |
-| I0 | Build Edge extension proof of concept for the official calendar | Known popup dismissal and field fill on a saved offline DOM fixture |
+| I0 | Define the mobile on-device intent package and allowlisted action protocol | Versioned schema, expiry, exact input-time preservation, negative tests; signing deferred until a host boundary exists |
+| I0 | Build a browser-neutral host-adapter proof of concept against an offline official-page fixture | Known popup dismissal and allowed field fill on saved fixture; no dependency on Microsoft Edge |
 | I0 | Validate official Seoul login/session behavior | Credentials stay on official origin; session expiry and resume documented |
 | I0 | Real-device test five bookings without automatic final submission | Exact screen recording and failure log |
-| I1 | Package a lightweight local classifier fallback | Model size/startup/memory benchmark; deterministic path remains default |
+| I1 | Package a lightweight mobile classifier fallback | Model size/startup/memory/battery benchmark on target phones; deterministic path remains default |
 | I1 | Add schedule and cancellation deadline confirmation | Never mark complete merely because official page opened |
 | I1 | Add separate research opt-in and withdrawal | Consent version, purpose, retention, export/delete behavior tested |
 | I1 | Add privacy-preserving event schema | No direct identifiers or credentials in events |
@@ -194,7 +196,7 @@ flowchart LR
 ```text
 Work in the existing seoul_kids checkout. Read AGENTS.md, RESEARCH_IMPLEMENTATION_HANDOFF.md, PROJECT_HANDOFF.md, and SEOUL_FLOW_FEASIBILITY.md first.
 
-Continue only the implementation I0 track. Preserve the research and safety boundaries. Start by defining a signed, versioned local intent/action protocol and an Edge extension proof of concept against a saved offline fixture of the official calendar. Use deterministic selectors for known UI; use a local model only as a fallback for unknown popup classification. Never store Seoul credentials or automate final submission. Run npm run check and npm run build before handoff.
+Continue only the implementation I0 track. Preserve the research and safety boundaries. Edge AI means a lightweight AI running on the customer's mobile device, not Microsoft Edge. Keep the core browser-neutral. Continue the versioned local intent/action protocol and build an OS-host-adapter proof of concept against a saved offline fixture of the official calendar. Use deterministic selectors for known UI; use a local model only as a fallback for unknown popup classification. Never store Seoul credentials or automate final submission. Run npm run check and npm run build before handoff.
 ```
 
 For research work, replace `implementation I0 track` with `research R0 track` and produce evidence artifacts before changing the product direction.

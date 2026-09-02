@@ -30,7 +30,7 @@ The user promise is:
 4. Never claim that a reservation is complete until official completion is confirmed.
 5. Keep the final application action under the user's control.
 
-Edge AI is an implementation option for reducing interruption after Seoul login. It is not itself the product goal and must not be marketed as working until an allowed runtime can actually observe and assist the cross-origin official flow.
+Edge AI means lightweight AI running on the customer's mobile device, not Microsoft Edge. It is an implementation option for reducing interruption after Seoul login, not the product goal, and must not be marketed as working until an allowed mobile runtime can actually observe and assist the cross-origin official flow.
 
 ## Confirmed product direction
 

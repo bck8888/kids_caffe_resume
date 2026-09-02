@@ -5,12 +5,12 @@ export type SafeScreenAction=
   | {type:"request_seoul_login";requiresUserConfirmation:true}
   | {type:"select_date";value:string;requiresUserConfirmation:false}
   | {type:"select_slot";value:string;requiresUserConfirmation:false}
-  | {type:"fill_allowed_fields";fields:string[];requiresUserConfirmation:true}
+  | {type:"fill_approved_fields";fields:string[];requiresUserConfirmation:true}
   | {type:"highlight_final_submit";requiresUserConfirmation:true}
-  | {type:"record_confirmation";requiresUserConfirmation:true}
+  | {type:"record_user_confirmed_result";requiresUserConfirmation:true}
   | {type:"stop";requiresUserConfirmation:true;reason:string};
 
-export type ScreenDecision={state:ScreenState;confidence:number;action:SafeScreenAction;adapterVersion:"screen-rules-v1"};
+export type ScreenDecision={state:ScreenState;confidence:number;action:SafeScreenAction;adapterVersion:"on-device-rules-v1"};
 export type ScreenIntent={date:string;slotId?:string;allowedFields?:string[]};
 
 const includesAny=(value:string,candidates:string[])=>candidates.some(candidate=>value.includes(candidate));
@@ -36,10 +36,10 @@ export function decideSafeAction(observation:ScreenObservation,intent:ScreenInte
     case "login_required": action={type:"request_seoul_login",requiresUserConfirmation:true}; break;
     case "calendar": action=intent.date?{type:"select_date",value:intent.date,requiresUserConfirmation:false}:{type:"stop",requiresUserConfirmation:true,reason:"예약 날짜가 없습니다."}; break;
     case "slot_selection": action=intent.slotId?{type:"select_slot",value:intent.slotId,requiresUserConfirmation:false}:{type:"stop",requiresUserConfirmation:true,reason:"사용자가 선택한 회차가 없습니다."}; break;
-    case "applicant_form": action=intent.allowedFields?.length?{type:"fill_allowed_fields",fields:intent.allowedFields,requiresUserConfirmation:true}:{type:"stop",requiresUserConfirmation:true,reason:"자동 입력이 허용된 항목이 없습니다."}; break;
+    case "applicant_form": action=intent.allowedFields?.length?{type:"fill_approved_fields",fields:intent.allowedFields,requiresUserConfirmation:true}:{type:"stop",requiresUserConfirmation:true,reason:"자동 입력이 허용된 항목이 없습니다."}; break;
     case "review": action={type:"highlight_final_submit",requiresUserConfirmation:true}; break;
-    case "complete": action={type:"record_confirmation",requiresUserConfirmation:true}; break;
+    case "complete": action={type:"record_user_confirmed_result",requiresUserConfirmation:true}; break;
     default: action={type:"stop",requiresUserConfirmation:true,reason:"알 수 없는 화면에서는 어떤 동작도 실행하지 않습니다."};
   }
-  return {...classified,action,adapterVersion:"screen-rules-v1"};
+  return {...classified,action,adapterVersion:"on-device-rules-v1"};
 }

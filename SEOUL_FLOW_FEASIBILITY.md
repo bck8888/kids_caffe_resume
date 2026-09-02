@@ -6,7 +6,7 @@ Last verified: 2026-09-02
 
 The target experience remains: preserve a user's facility, date, and slot through the Seoul-login boundary and help the user reach the final, user-controlled application step.
 
-That target is **not achievable by URL handoff from an ordinary Kakao/mobile web app alone**. A separate, policy-approved runtime capable of assisting the official cross-origin page is required for the full reservation-assistant promise.
+That target is **not achievable by URL handoff from an ordinary Kakao/mobile web app alone**. A separate, policy-approved mobile host runtime capable of assisting the official cross-origin page is required for the full reservation-assistant promise. `Edge AI` here means lightweight on-device intelligence, not Microsoft Edge.
 
 Until that runtime is proven, the connected web MVP must describe itself as a reservation-preparation assistant. It may remember the intent, show it clearly, and open the correct official facility calendar, but it must not claim to restore the official date/slot selection or operate the official page.
 
@@ -68,11 +68,12 @@ These restrictions follow from the cross-origin boundary and the official page's
 | Option | Kakao/mobile fit | Can assist official page | Product/policy status |
 |---|---:|---:|---|
 | Ordinary web/PWA | High | No | Safe fallback scope |
-| Browser extension | Low on mobile | Potentially | Requires permission and policy review |
-| Native app with controlled WebView | Medium | Potentially | Requires native build, technical proof, and policy review |
+| Browser extension | Low on mobile | Potentially | Not the target architecture; browser-dependent |
+| Native app with controlled WebView | Medium | Potentially | Browser-neutral assistant core plus OS host adapter; requires native build, technical proof, and policy review |
+| Mobile OS accessibility/automation host | Platform-dependent | Potentially | Requires separate Android/iOS feasibility, explicit permissions, store-policy and Seoul-policy review |
 | Seoul-supported API or partnership | High | Yes, if provided | Preferred but externally dependent |
 
-No runtime option is approved or implemented yet.
+No official-page host option is approved or implemented yet. The repository's current on-device modules are browser-neutral decision and intent code only.
 
 ## Required real-device tests
 

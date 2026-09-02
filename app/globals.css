@@ -102,7 +102,7 @@ button:disabled { cursor: wait; opacity: .65; }
 .slot .seat-count span { color: var(--muted); font-size: .82rem; }
 .slot-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
 .slot-actions a, .slot-actions button { display: flex; align-items: center; justify-content: center; min-height: 44px; margin: 0; border-radius: 11px; font-size: .9rem; font-weight: 700; text-decoration: none; }
-.slot-actions a { background: var(--accent); color: var(--accent-ink); }
+.slot-actions a, .slot-actions .official-action { background: var(--accent); color: var(--accent-ink); }
 .slot-actions button { background: #edf1e6; color: var(--ink); }
 .secondary { background: #fee500; color: #191919; }
 .saved { background: transparent; border: 1px solid #e4e1d7; }
@@ -160,6 +160,7 @@ footer a { color: #365414; }
 .flow-heading h2 { margin: 0; font-size: 1.35rem; }
 .step-indicator { flex: 0 0 auto; padding: 5px 9px; border-radius: 999px; background: #fff; color: #587132; font-size: .75rem; font-weight: 800; }
 .choice-block { display: grid; grid-template-columns: 28px 1fr; gap: 12px; margin-top: 22px; padding-top: 20px; border-top: 1px solid #d9e2cc; }
+.choice-block.active-choice { margin-top: 16px; padding-top: 16px; }
 .choice-number { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: #587132; color: #fff; font-size: .78rem; font-weight: 800; }
 .choice-content { min-width: 0; }
 .choice-content > strong { display: block; margin: 3px 0 10px; }
@@ -167,6 +168,12 @@ footer a { color: #365414; }
 .current-facility { position: relative; display: grid; gap: 4px; min-height: 0; margin: 0; padding: 13px 52px 13px 14px; background: #fff; color: var(--ink); text-align: left; }
 .current-facility small { color: var(--muted); font-weight: 400; line-height: 1.4; }
 .current-facility em { position: absolute; top: 50%; right: 14px; color: #587132; font-size: .78rem; font-style: normal; transform: translateY(-50%); }
+.flow-context { position: relative; display: grid; gap: 3px; width: 100%; min-height: 0; margin: 16px 0 0; padding: 12px 88px 12px 14px; border: 1px solid #d8dfcc; background: rgb(255 255 255 / 78%); color: var(--ink); text-align: left; }
+.flow-context span { overflow: hidden; font-weight: 800; text-overflow: ellipsis; white-space: nowrap; }
+.flow-context small { overflow: hidden; color: var(--muted); font-weight: 400; text-overflow: ellipsis; white-space: nowrap; }
+.flow-context em { position: absolute; top: 50%; right: 13px; color: #587132; font-size: .76rem; font-style: normal; transform: translateY(-50%); }
+.flow-context.compact { margin: 0 0 14px; background: #f6f8f1; }
+.slot-question { display: block; margin-bottom: 2px; }
 .empty-choice { margin: 0; background: #fff; color: #425527; border: 1px dashed #8ca367; }
 .quick-favorites { display: flex; gap: 7px; margin-top: 9px; overflow-x: auto; }
 .quick-favorites button { flex: 0 0 auto; width: auto; min-height: 38px; margin: 0; padding: 0 11px; background: #fff8c9; color: #514500; font-size: .78rem; }
@@ -197,5 +204,4 @@ footer a { color: #365414; }
   main { padding-inline: 16px; }
   .reservation-intent { grid-template-columns: 1fr; }
   .slot-actions { grid-template-columns: 1fr; }
-  .utility-actions { grid-template-columns: 1fr; }
 }

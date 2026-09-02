@@ -14,7 +14,7 @@ export default async function Home({searchParams}:HomeProps) {
       <header>
         <p className="eyebrow">서울형 키즈카페</p>
         <h1>예약할 시간을<br />빠르게 찾아보세요</h1>
-        <p className="summary">키즈카페와 이용 시간을 한 번만 선택하면 가능한 두 회차를 보여드려요.</p>
+        <p className="summary">키즈카페와 이용 시간을 한 번만 선택하면 가까운 회차를 최대 두 개 보여드려요.</p>
       </header>
 
       {authMessage&&<p className={`auth-banner ${authMessage.kind}`} role="status">{authMessage.text}</p>}
