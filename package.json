@@ -8,6 +8,10 @@
     "start": "next start",
     "check": "tsc --noEmit",
     "test": "node --test lib/**/*.test.ts",
+    "test:knowledge": "node --test facility-knowledge/test/*.test.mjs",
+    "knowledge:migrate": "node facility-knowledge/cli.mjs migrate",
+    "knowledge:collect": "node facility-knowledge/cli.mjs collect",
+    "knowledge:coverage": "node facility-knowledge/cli.mjs coverage",
     "alpha:preflight": "node scripts/alpha-preflight.mjs",
     "check:reservation-api": "node scripts/check-reservation-api.mjs"
   },

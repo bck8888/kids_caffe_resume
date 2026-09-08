@@ -1,14 +1,20 @@
 # Seoul reservation-flow feasibility
 
-Last verified: 2026-09-02
+Last updated: 2026-09-06 (offline protocol proof; official live flow last verified 2026-09-02)
 
 ## Decision
 
-The target experience remains: preserve a user's facility, date, and slot through the Seoul-login boundary and help the user reach the final, user-controlled application step.
+The target experience is now: one explicit press of the reservation button authorizes the on-device assistant to fill the known official review form and perform that one final submit for the exact facility, date, slot, and party intent.
 
 That target is **not achievable by URL handoff from an ordinary Kakao/mobile web app alone**. A separate, policy-approved mobile host runtime capable of assisting the official cross-origin page is required for the full reservation-assistant promise. `Edge AI` here means lightweight on-device intelligence, not Microsoft Edge.
 
-Until that runtime is proven, the connected web MVP must describe itself as a reservation-preparation assistant. It may remember the intent, show it clearly, and open the correct official facility calendar, but it must not claim to restore the official date/slot selection or operate the official page.
+An offline, fixture-only browser-neutral protocol now proves that this behavior is technically possible under a dedicated host architecture. The proof does not navigate an authenticated browser, touch a live reservation, or establish that current UMPPA screens/selectors are valid. Until the runtime, policy, legal, and real-device gates pass, the connected web MVP must describe itself as a reservation-preparation assistant and must not claim to operate or submit the official page.
+
+## Concrete feasibility verdict
+
+**Technically possible, currently not production-enabled.** The browser-neutral core can issue and consume a short-lived, one-time execution authorization, require exact official-origin and known-review-form identity, compare the observed facility/date/slot/party intent, require every versioned agreement, reject pending validation and excluded flows, map personal values directly from ephemeral memory into the official page, and dispatch the fixture submit control. The connected capability remains explicitly disabled pending Seoul automation policy/legal approval and real-device validation.
+
+This changes the earlier product assumption that final submit must always be a second manual click. The user remains the authorizing party: the explicit reservation-button press is the authorization for exactly one bound execution, and any mismatch or replay stops. It does not authorize payment, care, group, waitlist, cancellation, credential capture, or arbitrary clicking.
 
 ## Verified official flow
 
@@ -69,11 +75,11 @@ These restrictions follow from the cross-origin boundary and the official page's
 |---|---:|---:|---|
 | Ordinary web/PWA | High | No | Safe fallback scope |
 | Browser extension | Low on mobile | Potentially | Not the target architecture; browser-dependent |
-| Native app with controlled WebView | Medium | Potentially | Browser-neutral assistant core plus OS host adapter; requires native build, technical proof, and policy review |
+| Native app with controlled WebView | Medium | Potentially | Browser-neutral core is proven against fixtures; OS host adapter, policy approval, and real-device proof remain |
 | Mobile OS accessibility/automation host | Platform-dependent | Potentially | Requires separate Android/iOS feasibility, explicit permissions, store-policy and Seoul-policy review |
 | Seoul-supported API or partnership | High | Yes, if provided | Preferred but externally dependent |
 
-No official-page host option is approved or implemented yet. The repository's current on-device modules are browser-neutral decision and intent code only.
+No official-page host option is approved or implemented against the live service. The repository now includes browser-neutral intent/decision code and an offline fixture submit protocol; it intentionally contains no authenticated navigation or live submit integration.
 
 ## Required real-device tests
 
@@ -92,5 +98,6 @@ Do not expose the customer-facing label `Edge AI reservation assistant` until al
 2. Official-page state observation works on the target mobile environment.
 3. Date and slot continuation works after a real Seoul login.
 4. Unknown official screens stop safely.
-5. Final submission remains user-controlled.
+5. Final submission occurs only from a fresh, one-time authorization created by the user's explicit reservation-button press and bound to the reviewed intent.
 6. Legal and policy review approves the integration method.
+7. Exact agreement versions, official review/form identities, validation behavior, and excluded-flow detection are verified on each target device without retaining personal data or page captures.

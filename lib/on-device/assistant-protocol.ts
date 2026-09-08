@@ -8,6 +8,7 @@ export const ON_DEVICE_ACTIONS = [
   "select_slot",
   "fill_approved_fields",
   "highlight_final_submit",
+  "submit_reservation",
   "record_user_confirmed_result",
   "stop"
 ] as const;

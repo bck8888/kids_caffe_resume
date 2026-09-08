@@ -16,13 +16,13 @@ test("모바일 기기용 예약 맥락은 입력 시간을 바꾸지 않는다"
 test("만료되거나 허용 목록 밖 행동이 들어간 맥락을 거부한다",()=>{
   const expired=createOnDeviceReservationIntent(input,now);
   assert.equal(validateOnDeviceReservationIntent(expired,new Date("2026-09-03T04:00:01.000Z")),false);
-  const unsafe={...createOnDeviceReservationIntent(input,now),allowedActions:["submit_reservation"]};
+  const unsafe={...createOnDeviceReservationIntent(input,now),allowedActions:["arbitrary_click"]};
   assert.equal(validateOnDeviceReservationIntent(unsafe,new Date("2026-09-03T03:30:00.000Z")),false);
   const invalidExpiry={...createOnDeviceReservationIntent(input,now),expiresAt:"not-a-date"};
   assert.equal(validateOnDeviceReservationIntent(invalidExpiry,new Date("2026-09-03T03:30:00.000Z")),false);
 });
 
-test("최종 신청과 취소는 허용 행동에 포함되지 않는다",()=>{
+test("기본 연결 흐름은 최종 신청과 취소를 허용하지 않는다",()=>{
   const actions=createOnDeviceReservationIntent(input,now).allowedActions as string[];
   assert.equal(actions.includes("submit_reservation"),false);
   assert.equal(actions.includes("cancel_reservation"),false);
